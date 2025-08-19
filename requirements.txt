@@ -5,3 +5,4 @@ pyarrow>=10.0.0
 numpy>=1.21.0
 plotly>=5.0.0
 python-dotenv
+supabase>=2.0.0
