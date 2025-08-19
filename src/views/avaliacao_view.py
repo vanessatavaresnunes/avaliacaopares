@@ -175,10 +175,10 @@ class AvaliacaoView:
 
         col1, col2, col3 = st.columns([1, 1, 1])
 
-        with col1:
-            if st.button("Preencher para Teste"):
-                self.controller.preencher_dados_teste()
-                st.rerun()
+    # with col1:
+    #     if st.button("Preencher para Teste"):
+    #         self.controller.preencher_dados_teste()
+    #         st.rerun()
 
         with col2:
             if st.button("💾 Salvar Avaliações", type="primary", use_container_width=True):
