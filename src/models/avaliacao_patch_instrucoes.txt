@@ -1,0 +1,7 @@
+from src.models.usuario import UsuarioModel
+# ...existing code...
+# Adicione a seguir no início da classe AvaliacaoModel:
+# self.usuario_model = UsuarioModel()
+# E no loop de salvar avaliações, adicione o nome do avaliado:
+# nome_avaliado = self.usuario_model.obter_nome_aluno(id_avaliado)
+# E inclua 'nome_avaliado': nome_avaliado no dicionário salvo.
