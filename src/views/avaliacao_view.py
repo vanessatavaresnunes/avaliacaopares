@@ -186,19 +186,17 @@ class AvaliacaoView:
                 if sucesso:
                     st.session_state.avaliacao_salva = True
                     st.session_state.mensagem_sucesso = mensagem
-                    # Buscar o arquivo de avaliação mais recente salvo
-                    import glob, json
-                    arquivos = sorted(glob.glob("dados/avaliacoes_*.json"), reverse=True)
-                    avaliacoes_ultima = []
-                    if arquivos:
-                        with open(arquivos[0], encoding="utf-8") as f:
-                            for linha in f:
-                                linha = linha.strip()
-                                if linha:
-                                    try:
-                                        avaliacoes_ultima.append(json.loads(linha))
-                                    except Exception:
-                                        pass
+                    # Buscar as avaliações feitas pelo usuário no consolidado do Supabase
+                    from src.models.avaliacao import AvaliacaoModel
+                    model = AvaliacaoModel()
+                    df = model.carregar_dados()
+                    id_avaliador = st.session_state.get('aluno_id_atual')
+                    sprint_atual = st.session_state.get('sprint_atual', None)
+                    if sprint_atual:
+                        sprint_str = str(sprint_atual)
+                        avaliacoes_ultima = df[(df['id_avaliador'] == id_avaliador) & (df['sprint'] == sprint_str)].to_dict(orient='records')
+                    else:
+                        avaliacoes_ultima = df[df['id_avaliador'] == id_avaliador].to_dict(orient='records')
                     st.session_state.avaliacoes_ultima = avaliacoes_ultima
                     st.rerun()
                 else:

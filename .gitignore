@@ -1,6 +1,6 @@
 # Dados salvos
 dados/
-*.json
+#*.json
 
 # Python
 __pycache__/

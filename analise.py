@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import glob
+from src.utils.supabase_storage import list_json_files_in_bucket, download_json_from_bucket
 import json
 from collections import defaultdict
 
@@ -9,17 +9,22 @@ st.set_page_config(page_title="Análise das Avaliações", layout="wide")
 st.title("🔎 Análise das Avaliações de Pares")
 
 # Carregar todos os arquivos de avaliações
-arquivos = sorted(glob.glob("dados/avaliacoes_*.json"))
+
+# Listar arquivos do bucket Supabase
+arquivos = list_json_files_in_bucket(prefix="avaliacoes_")
 if not arquivos:
-    st.warning("Nenhum dado de avaliação encontrado.")
+    st.warning("Nenhum dado de avaliação encontrado no Supabase.")
     st.stop()
 
 # Carregar dados em DataFrame
 linhas = []
+import tempfile
 for arq in arquivos:
-    with open(arq, encoding="utf-8") as f:
-        for linha in f:
-            linha = linha.strip()
+    with tempfile.NamedTemporaryFile(delete=False, mode="w+b") as tmp:
+        download_json_from_bucket(arq, tmp.name)
+        tmp.seek(0)
+        for linha in tmp:
+            linha = linha.decode("utf-8").strip()
             if linha:
                 try:
                     linhas.append(json.loads(linha))
@@ -52,6 +57,10 @@ for grupo in grupos:
             "id_avaliador", "id_avaliado", "eixo"
         ], as_index=False).last()
         st.subheader(f"Sprint: {sprint}")
+        # Tabela detalhada: avaliações feitas por cada avaliador
+        st.markdown("**Avaliações feitas por cada avaliador:**")
+        colunas_detalhe = ["nome_avaliador", "nome_avaliado", "eixo", "nota", "feedback"]
+        st.dataframe(df_sprint_last[colunas_detalhe].sort_values(["nome_avaliador", "nome_avaliado", "eixo"]), hide_index=True)
         alunos = sorted(df_sprint_last["nome_avaliado"].unique())
         eixos = sorted(df_sprint_last["eixo"].unique())
         # Montar tabela de somatórios

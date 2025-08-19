@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import os
 import unicodedata
+from src.utils.supabase_storage import upload_json_to_bucket, download_json_from_bucket, list_json_files_in_bucket
 
 
 @dataclass
@@ -47,15 +48,20 @@ class AvaliacaoModel:
             time: Time do avaliador
             sprint: Sprint que está sendo avaliada
             avaliacoes: Dicionário com as avaliações
-            nomes_eixos: Lista com os nomes dos eixos de avaliação
+            nomes_eixos: Lista com os nomes dos eixos
             
         Returns:
             Caminho do arquivo salvo
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
+        now = datetime.now()
+        data = now.strftime("%Y%m%d")
+        horaminuto = now.strftime("%H%M")
+        grupo = str(time)
+        spt = str(sprint)
+        nome_arquivo = f"aval_G{grupo}_S{spt}_{id_avaliador}_{data}_{horaminuto}.json"
         # Preparar dados para salvar
         dados_para_salvar = []
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
         for id_avaliado, notas in avaliacoes.items():
             nome_avaliado = self.usuario_model.obter_nome_aluno(id_avaliado)
             for i, nome_eixo in enumerate(nomes_eixos):
@@ -72,42 +78,38 @@ class AvaliacaoModel:
                     'nota': notas['notas'][i],
                     'feedback': feedback_normalizado
                 })
-        
         df = pd.DataFrame(dados_para_salvar)
-        
-        # Salvar arquivo individual
-        arquivo = Path(self.diretorio_dados) / f'avaliacoes_{timestamp}.json'
-        df.to_json(str(arquivo), orient='records', lines=True, force_ascii=False)
-        
-        # Salvar arquivo consolidado
+        # Salvar arquivo individual localmente
+        arquivo_local = Path(self.diretorio_dados) / nome_arquivo
+        df.to_json(str(arquivo_local), orient='records', lines=True, force_ascii=False)
+        # Upload para Supabase
+        upload_json_to_bucket(str(arquivo_local), nome_arquivo)
+        # Salvar arquivo consolidado local e no Supabase
         self._salvar_arquivo_consolidado(df)
-        
-        return arquivo
+        return str(arquivo_local)
     
     def _salvar_arquivo_consolidado(self, df_novo: pd.DataFrame):
-        """Salva ou atualiza o arquivo consolidado"""
+        """Salva ou atualiza o arquivo consolidado local e no Supabase"""
         arquivo_consolidado = Path(self.diretorio_dados) / 'avaliacoescompletas_consolidadas.json'
-        
         if arquivo_consolidado.exists():
             df_existente = pd.read_json(str(arquivo_consolidado), orient='records', lines=True, encoding='utf-8')
             df_consolidado = pd.concat([df_existente, df_novo], ignore_index=True)
         else:
             df_consolidado = df_novo
-        
         df_consolidado.to_json(str(arquivo_consolidado), orient='records', lines=True, force_ascii=False)
+        upload_json_to_bucket(str(arquivo_consolidado), 'avaliacoescompletas_consolidadas.json')
     
     def carregar_dados(self) -> pd.DataFrame:
         """
-        Carrega todos os dados de avaliação
-        
+        Carrega todos os dados de avaliação do Supabase (baixa o consolidado)
         Returns:
             DataFrame com todos os dados ou DataFrame vazio se não existir
         """
         arquivo_consolidado = Path(self.diretorio_dados) / 'avaliacoescompletas_consolidadas.json'
-        
-        if arquivo_consolidado.exists():
+        try:
+            download_json_from_bucket('avaliacoescompletas_consolidadas.json', str(arquivo_consolidado))
             return pd.read_json(str(arquivo_consolidado), orient='records', lines=True, encoding='utf-8')
-        else:
+        except Exception:
             return pd.DataFrame()
     
     def validar_soma_notas_por_eixo(self, avaliacoes: Dict, ids_alunos_time: List[int], nomes_eixos: List[str]) -> Dict[str, Dict[str, any]]:
@@ -136,29 +138,25 @@ class AvaliacaoModel:
 
     def validar_notas_individuais(self, avaliacoes: Dict, ids_alunos_time: List[int], nomes_eixos: List[str], nota_maxima: int, num_integrantes_grupo: int) -> bool:
         """
-        Valida se as notas individuais não excedem o valor máximo e a regra N/2.
+        Valida se as notas individuais não excedem o valor máximo.
 
         Args:
             avaliacoes: Dicionário com as avaliações.
             ids_alunos_time: Lista de IDs de alunos do time.
             nomes_eixos: Lista com os nomes dos eixos.
             nota_maxima: Nota máxima permitida.
-            num_integrantes_grupo: Número total de integrantes do grupo (N).
-
-        Returns:
-            True se todas as notas são válidas, False caso contrário.
+            num_integrantes_grupo: Número de integrantes no grupo.
         """
-        max_nota_n_div_2 = int(num_integrantes_grupo / 2)
         for id_aluno in ids_alunos_time:
             for i in range(len(nomes_eixos)):
                 nota = avaliacoes[id_aluno]['notas'][i]
-                if nota > nota_maxima or nota > max_nota_n_div_2:
+                if not (0 <= nota <= nota_maxima):
                     return False
         return True
 
     def validar_preenchimento_feedbacks(self, avaliacoes: Dict, ids_alunos_time: List[int], nomes_eixos: List[str]) -> bool:
         """
-        Valida se todos os campos de feedback foram preenchidos.
+        Valida se todos os feedbacks foram preenchidos.
 
         Args:
             avaliacoes: Dicionário com as avaliações.
