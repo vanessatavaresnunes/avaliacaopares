@@ -1,6 +1,12 @@
 # Dados salvos
+# Ignorar dados gerados, mas permitir arquivos essenciais de configuração
 dados/
-#*.json
+!data/alunos.json
+!data/config.json
+!data/eixos.json
+
+# Permitir versionamento da pasta data/ e arquivos essenciais
+!data/
 
 # Python
 __pycache__/
