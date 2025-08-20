@@ -92,7 +92,7 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const { context, github } = require('@actions/github-api');
+          const { github } = require('@actions/github');
           
           let message = '';
           
