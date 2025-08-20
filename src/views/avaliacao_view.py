@@ -19,16 +19,16 @@ class AvaliacaoView:
             self._renderizar_tela_sucesso()
             return
 
-        st.title("📊 Avaliação de Pares")
-        st.selectbox("Selecione a Sprint", [f"Sprint {i}" for i in range(1, 6)], key="sprint_atual")
 
-        with st.expander("👤 Informações do Usuário", expanded=False):
-            aluno_atual, time_atual = st.session_state.aluno_atual, st.session_state.time_atual
-            st.markdown(f"**Aluno:** {aluno_atual}")
-            st.markdown(f"**Time:** {time_atual}")
-            if st.button("Logout", type="secondary"):
-                self.controller.fazer_logout()
-                st.rerun()
+        st.title("📊 Avaliação de Pares")
+        aluno_atual, time_atual = st.session_state.aluno_atual, st.session_state.time_atual
+        st.markdown(f"**Aluno:** {aluno_atual}")
+        st.markdown(f"**Time:** {time_atual}")
+        if st.button("Logout", type="secondary"):
+            self.controller.fazer_logout()
+            st.rerun()
+
+        st.selectbox("Selecione a Sprint", [f"Sprint {i}" for i in range(1, 6)], key="sprint_atual")
 
         # Obter dados do usuário atual
         alunos_time = self.controller.obter_alunos_para_avaliar()
@@ -175,10 +175,10 @@ class AvaliacaoView:
 
         col1, col2, col3 = st.columns([1, 1, 1])
 
-    # with col1:
-    #     if st.button("Preencher para Teste"):
-    #         self.controller.preencher_dados_teste()
-    #         st.rerun()
+        with col1:
+            if st.button("Preencher para Teste"):
+                self.controller.preencher_dados_teste()
+                st.rerun()
 
         with col2:
             if st.button("💾 Salvar Avaliações", type="primary", use_container_width=True):
@@ -186,17 +186,17 @@ class AvaliacaoView:
                 if sucesso:
                     st.session_state.avaliacao_salva = True
                     st.session_state.mensagem_sucesso = mensagem
-                    # Buscar as avaliações feitas pelo usuário no consolidado do Supabase
+                    # Buscar apenas as avaliações feitas pelo usuário no último envio (maior timestamp)
                     from src.models.avaliacao import AvaliacaoModel
                     model = AvaliacaoModel()
                     df = model.carregar_dados()
                     id_avaliador = st.session_state.get('aluno_id_atual')
-                    sprint_atual = st.session_state.get('sprint_atual', None)
-                    if sprint_atual:
-                        sprint_str = str(sprint_atual)
-                        avaliacoes_ultima = df[(df['id_avaliador'] == id_avaliador) & (df['sprint'] == sprint_str)].to_dict(orient='records')
+                    df_user = df[df['id_avaliador'] == id_avaliador]
+                    if not df_user.empty:
+                        ultimo_timestamp = df_user['timestamp'].max()
+                        avaliacoes_ultima = df_user[df_user['timestamp'] == ultimo_timestamp].to_dict(orient='records')
                     else:
-                        avaliacoes_ultima = df[df['id_avaliador'] == id_avaliador].to_dict(orient='records')
+                        avaliacoes_ultima = []
                     st.session_state.avaliacoes_ultima = avaliacoes_ultima
                     st.rerun()
                 else:
