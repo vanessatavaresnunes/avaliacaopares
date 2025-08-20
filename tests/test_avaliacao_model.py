@@ -7,7 +7,7 @@ import unittest
 import tempfile
 import os
 import pandas as pd
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from src.models.avaliacao import AvaliacaoModel, Avaliacao
 
 
@@ -98,6 +98,46 @@ class TestAvaliacaoModel(unittest.TestCase):
         self.assertEqual(estatisticas['alunos_avaliadores'], 2)
         self.assertEqual(estatisticas['times'], 1)
         self.assertIn('20231201', estatisticas['periodo'])
+    
+    def test_carregar_dados_mock(self):
+        """Testa carregamento de dados usando mock do Supabase"""
+        # Dados simulados
+        dados_simulados = [
+            {'id_avaliador': 1, 'nome_avaliador': 'João', 'nota': 3},
+            {'id_avaliador': 2, 'nome_avaliador': 'Maria', 'nota': 2}
+        ]
+        
+        # Mock para simular arquivo temporário com dados
+        with patch('tempfile.NamedTemporaryFile') as mock_temp, \
+             patch('pandas.read_json') as mock_read_json, \
+             patch('os.unlink') as mock_unlink:
+            
+            mock_temp.return_value.__enter__.return_value.name = '/tmp/test.json'
+            mock_read_json.return_value = pd.DataFrame(dados_simulados)
+            
+            # Executar método
+            df = self.model.carregar_dados()
+            
+            # Verificar que pandas foi chamado e arquivo foi limpo
+            mock_read_json.assert_called_once()
+            mock_unlink.assert_called_once()
+            
+            # Verificar dados retornados
+            self.assertEqual(len(df), 2)
+            self.assertEqual(df.iloc[0]['nome_avaliador'], 'João')
+    
+    def test_carregar_dados_erro_retorna_dataframe_vazio(self):
+        """Testa que carregar_dados retorna DataFrame vazio em caso de erro"""
+        # Mock para simular erro no download
+        with patch('src.models.avaliacao.download_json_from_bucket') as mock_download:
+            mock_download.side_effect = Exception("Erro Supabase")
+            
+            # Executar método
+            df = self.model.carregar_dados()
+            
+            # Verificar que retorna DataFrame vazio
+            self.assertTrue(df.empty)
+            self.assertIsInstance(df, pd.DataFrame)
 
 
 class TestAvaliacao(unittest.TestCase):
