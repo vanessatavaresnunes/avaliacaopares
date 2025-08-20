@@ -52,19 +52,8 @@ def install_dependencies():
 
 
 def create_directories():
-    """Cria diretórios necessários"""
-    print("\n📁 Criando diretórios...")
-    
-    directories = ["dados", "data"]
-    
-    for directory in directories:
-        try:
-            Path(directory).mkdir(exist_ok=True)
-            print(f"✅ Diretório '{directory}' criado/verificado")
-        except Exception as e:
-            print(f"❌ Erro ao criar diretório '{directory}': {e}")
-            return False
-    
+    """Criação de diretórios não é mais necessária - usando apenas Supabase"""
+    print("\n📁 Usando Supabase para armazenamento - sem diretórios locais necessários")
     return True
 
 

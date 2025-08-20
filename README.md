@@ -84,20 +84,47 @@ AvaliacaoParesv2/
 │   ├── models/            # Modelos de dados
 │   ├── controllers/       # Controllers
 │   ├── views/            # Views (interfaces)
-│   └── __init__.py
+│   └── utils/            # Utilitários (Supabase)
 ├── data/                  # Configurações em JSON
 │   ├── alunos.json       # Lista de alunos por grupos
 │   ├── eixos.json        # Definição dos eixos
 │   └── config.json       # Configurações do sistema
 ├── tests/                 # Testes unitários
 ├── scripts/              # Scripts de desenvolvimento
+├── docs/                 # Documentação da API
 ├── dados/                # Dados salvos (criado automaticamente)
-├── app.py            # Aplicativo principal (MVC)
+├── app.py                # Aplicativo principal (MVC)
 ├── visualizador_mvc.py   # Visualizador (MVC)
-├── app.py                # Aplicativo original (legado)
-├── visualizar_dados.py   # Visualizador original (legado)
 └── requirements.txt      # Dependências
 ```
+
+## 🧪 Testes
+
+### Executar Testes
+
+**Comando básico:**
+```bash
+python -m pytest tests/ -v
+```
+
+**Com cobertura de código:**
+```bash
+python -m pytest tests/ -v --cov=src --cov-report=html --cov-report=term
+```
+
+**Usando script de qualidade completo:**
+```bash
+python scripts/run_tests.py
+```
+
+### Relatórios
+- **Terminal**: Exibe cobertura diretamente
+- **HTML**: Relatório detalhado em `htmlcov/index.html`
+- **Qualidade**: Script roda testes + formatação + style check
+
+### Estrutura dos Testes
+- `test_avaliacao_model.py`: Testes do modelo de avaliação
+- `test_analise_calculo.py`: Testes de cálculos matemáticos
 
 ## 🚀 Como Usar
 

@@ -11,6 +11,7 @@ from pathlib import Path
 import pandas as pd
 import os
 import unicodedata
+import tempfile
 from src.utils.supabase_storage import upload_json_to_bucket, download_json_from_bucket, list_json_files_in_bucket
 
 
@@ -31,7 +32,6 @@ class AvaliacaoModel:
     
     def __init__(self, diretorio_dados: str = "dados"):
         self.diretorio_dados = diretorio_dados
-        self._criar_diretorio_se_nao_existe()
         self.usuario_model = UsuarioModel()
     
     def _criar_diretorio_se_nao_existe(self):
@@ -79,25 +79,46 @@ class AvaliacaoModel:
                     'feedback': feedback_normalizado
                 })
         df = pd.DataFrame(dados_para_salvar)
-        # Salvar arquivo individual localmente
-        arquivo_local = Path(self.diretorio_dados) / nome_arquivo
-        df.to_json(str(arquivo_local), orient='records', lines=True, force_ascii=False)
-        # Upload para Supabase
-        upload_json_to_bucket(str(arquivo_local), nome_arquivo)
-        # Salvar arquivo consolidado local e no Supabase
-        self._salvar_arquivo_consolidado(df)
-        return str(arquivo_local)
+        # Criar arquivo temporário
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as tmp_file:
+            df.to_json(tmp_file.name, orient='records', lines=True, force_ascii=False)
+            arquivo_temp = tmp_file.name
+        
+        try:
+            # Upload para Supabase
+            upload_json_to_bucket(arquivo_temp, nome_arquivo)
+            # Salvar arquivo consolidado no Supabase
+            self._salvar_arquivo_consolidado(df)
+        finally:
+            # Limpar arquivo temporário
+            os.unlink(arquivo_temp)
+        
+        return nome_arquivo
     
     def _salvar_arquivo_consolidado(self, df_novo: pd.DataFrame):
         """Salva ou atualiza o arquivo consolidado local e no Supabase"""
-        arquivo_consolidado = Path(self.diretorio_dados) / 'avaliacoescompletas_consolidadas.json'
-        if arquivo_consolidado.exists():
-            df_existente = pd.read_json(str(arquivo_consolidado), orient='records', lines=True, encoding='utf-8')
+        # Tentar baixar arquivo consolidado existente do Supabase
+        try:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as tmp_file:
+                arquivo_temp_download = tmp_file.name
+            
+            download_json_from_bucket('avaliacoescompletas_consolidadas.json', arquivo_temp_download)
+            df_existente = pd.read_json(arquivo_temp_download, orient='records', lines=True, encoding='utf-8')
             df_consolidado = pd.concat([df_existente, df_novo], ignore_index=True)
-        else:
+            os.unlink(arquivo_temp_download)
+        except:
+            # Se não existir arquivo consolidado, usar apenas os novos dados
             df_consolidado = df_novo
-        df_consolidado.to_json(str(arquivo_consolidado), orient='records', lines=True, force_ascii=False)
-        upload_json_to_bucket(str(arquivo_consolidado), 'avaliacoescompletas_consolidadas.json')
+        
+        # Criar arquivo temporário para upload
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as tmp_file:
+            df_consolidado.to_json(tmp_file.name, orient='records', lines=True, force_ascii=False)
+            arquivo_temp_upload = tmp_file.name
+        
+        try:
+            upload_json_to_bucket(arquivo_temp_upload, 'avaliacoescompletas_consolidadas.json')
+        finally:
+            os.unlink(arquivo_temp_upload)
     
     def carregar_dados(self) -> pd.DataFrame:
         """
@@ -105,10 +126,14 @@ class AvaliacaoModel:
         Returns:
             DataFrame com todos os dados ou DataFrame vazio se não existir
         """
-        arquivo_consolidado = Path(self.diretorio_dados) / 'avaliacoescompletas_consolidadas.json'
         try:
-            download_json_from_bucket('avaliacoescompletas_consolidadas.json', str(arquivo_consolidado))
-            return pd.read_json(str(arquivo_consolidado), orient='records', lines=True, encoding='utf-8')
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as tmp_file:
+                arquivo_temp = tmp_file.name
+            
+            download_json_from_bucket('avaliacoescompletas_consolidadas.json', arquivo_temp)
+            df = pd.read_json(arquivo_temp, orient='records', lines=True, encoding='utf-8')
+            os.unlink(arquivo_temp)
+            return df
         except Exception:
             return pd.DataFrame()
     

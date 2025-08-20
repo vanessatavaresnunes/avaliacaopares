@@ -40,6 +40,9 @@ class AvaliacaoView:
         # Matriz de avaliação
         self._renderizar_matriz_avaliacao(alunos_time)
 
+        # Executar validação para garantir que os dados estejam atualizados
+        self.controller.validar_avaliacoes()
+        
         # Validação das notas
         self._renderizar_validacao_notas(alunos_time)
 
@@ -105,7 +108,7 @@ class AvaliacaoView:
                                 "Feedback",
                                 value=st.session_state.avaliacoes_temp[aluno_id]['feedbacks'][i],
                                 key=f"feedback_{aluno_id}_{i}",
-                                height=50,
+                                height=68,
                                 placeholder=f"Comentários sobre {nome_eixo.lower()}...",
                                 on_change=self.controller.atualizar_feedback,
                                 args=(aluno_id, i)
