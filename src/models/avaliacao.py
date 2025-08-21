@@ -53,7 +53,9 @@ class AvaliacaoModel:
         Returns:
             Caminho do arquivo salvo
         """
-        now = datetime.now()
+        import time as time_mod
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
         data = now.strftime("%Y%m%d")
         horaminuto = now.strftime("%H%M")
         grupo = str(time)
@@ -61,7 +63,7 @@ class AvaliacaoModel:
         nome_arquivo = f"aval_G{grupo}_S{spt}_{id_avaliador}_{data}_{horaminuto}.json"
         # Preparar dados para salvar
         dados_para_salvar = []
-        timestamp = now.strftime("%Y%m%d_%H%M%S")
+        timestamp = int(now.timestamp())
         for id_avaliado, notas in avaliacoes.items():
             nome_avaliado = self.usuario_model.obter_nome_aluno(id_avaliado)
             for i, nome_eixo in enumerate(nomes_eixos):
