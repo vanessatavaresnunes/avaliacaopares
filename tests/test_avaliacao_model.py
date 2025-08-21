@@ -106,22 +106,24 @@ class TestAvaliacaoModel(unittest.TestCase):
             {'id_avaliador': 1, 'nome_avaliador': 'João', 'nota': 3},
             {'id_avaliador': 2, 'nome_avaliador': 'Maria', 'nota': 2}
         ]
-        
-        # Mock para simular arquivo temporário com dados
-        with patch('tempfile.NamedTemporaryFile') as mock_temp, \
+
+        with patch('src.models.avaliacao.download_json_from_bucket') as mock_download, \
+             patch('tempfile.NamedTemporaryFile') as mock_temp, \
              patch('pandas.read_json') as mock_read_json, \
              patch('os.unlink') as mock_unlink:
-            
+
             mock_temp.return_value.__enter__.return_value.name = '/tmp/test.json'
             mock_read_json.return_value = pd.DataFrame(dados_simulados)
-            
+            # Simula download sem erro
+            mock_download.return_value = None
+
             # Executar método
             df = self.model.carregar_dados()
-            
+
             # Verificar que pandas foi chamado e arquivo foi limpo
             mock_read_json.assert_called_once()
             mock_unlink.assert_called_once()
-            
+
             # Verificar dados retornados
             self.assertEqual(len(df), 2)
             self.assertEqual(df.iloc[0]['nome_avaliador'], 'João')
