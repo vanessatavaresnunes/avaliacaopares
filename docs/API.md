@@ -109,9 +109,9 @@ Interface de visualização de dados.
 @dataclass
 class Avaliacao:
     timestamp: str
-    aluno_avaliador: str
+    id_avaliador: int
     time: str
-    aluno_avaliado: str
+    id_avaliado: int
     eixo: str
     nota: int
     feedback: str
@@ -124,7 +124,6 @@ class Avaliacao:
 class Configuracao:
     nota_minima: int
     nota_maxima: int
-    diretorio_dados: str
 ```
 
 ## Fluxo de Dados
@@ -150,15 +149,22 @@ class Configuracao:
 ## Armazenamento
 
 ### Formato
-- **JSON**: Formato eficiente para dados tabulares
+- **Supabase Storage**: Armazenamento em nuvem para arquivos JSON
+- **JSON Local**: Backup e cache temporário
 - **Estrutura**: Cada linha representa uma avaliação individual
 - **Consolidação**: Arquivo individual + arquivo consolidado
 
+### Integração Supabase
+- **Upload**: `upload_json_to_bucket(file_path, bucket_path)`
+- **Download**: `download_json_from_bucket(bucket_path, local_path)`
+- **Listagem**: `list_json_files_in_bucket(prefix)`
+- **Bucket**: Configurado via variável de ambiente `BUCKET_NAME`
+
 ### Campos
 - `timestamp`: Data e hora da avaliação
-- `aluno_avaliador`: Quem fez a avaliação
+- `id_avaliador`: ID do aluno que fez a avaliação
 - `time`: Time do avaliador
-- `aluno_avaliado`: Quem foi avaliado
+- `id_avaliado`: ID do aluno avaliado
 - `eixo`: Eixo de avaliação
 - `nota`: Nota atribuída
 - `feedback`: Comentário textual
@@ -207,6 +213,7 @@ O sistema inclui tratamento robusto de erros:
 ## Performance
 
 ### Otimizações
+- **Supabase Storage**: Armazenamento escalável em nuvem
 - **JSON**: Formato eficiente para leitura/escrita
 - **Lazy loading**: Dados carregados sob demanda
 - **Caching**: Sessão mantém dados temporários

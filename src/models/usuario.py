@@ -86,7 +86,7 @@ class UsuarioModel:
                 return json.load(arquivo)
         except (FileNotFoundError, json.JSONDecodeError) as e:
             print(f"Erro ao carregar config.json: {e}")
-            return {"nota_minima": 0, "nota_maxima": 3, "diretorio_dados": "dados"}
+            return {"nota_minima": 0, "nota_maxima": 3}
     
     def obter_times(self) -> List[str]:
         """Retorna lista de times disponíveis"""

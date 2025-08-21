@@ -48,5 +48,12 @@ Thumbs.db
 # Streamlit
 .streamlit/
 
+# Claude Code
+.claude
+
 # Logs
 *.log
+
+
+#envs
+.env
