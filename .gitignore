@@ -1,0 +1,59 @@
+# Dados salvos
+# Ignorar dados gerados, mas permitir arquivos essenciais de configuração
+dados/
+!data/alunos.json
+!data/config.json
+!data/eixos.json
+
+# Permitir versionamento da pasta data/ e arquivos essenciais
+!data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Claude Code
+.claude
+
+# Logs
+*.log
+
+
+#envs
+.env
