@@ -141,7 +141,6 @@ class AvaliacaoView:
 
         # Display messages from session_state
         st.markdown("**Soma das Notas por Eixo:**")
-        #st.write("DEBUG soma_notas details:", st.session_state.validation_messages['soma_notas']['details'])
         for eixo, details in st.session_state.validation_messages['soma_notas']['details'].items():
             soma_atual = details.get('soma_atual', 0)
             soma_esperada = details.get('soma_esperada', 0)
@@ -205,24 +204,6 @@ class AvaliacaoView:
                 else:
                     st.error(mensagem)
 
-    def _obter_avaliacoes_feitas(self):
-        """Obtém as avaliações feitas pelo usuário atual em formato estruturado para exibição."""
-        avaliacoes = []
-        nomes_eixos = self.controller.obter_nomes_eixos()
-        alunos = self.controller.obter_alunos_para_avaliar()
-        avaliacoes_temp = st.session_state.get('avaliacoes_temp', {})
-        for aluno in alunos:
-            aluno_id = aluno['id']
-            aluno_nome = aluno['nome']
-            if aluno_id in avaliacoes_temp:
-                notas = avaliacoes_temp[aluno_id]['notas']
-                feedbacks = avaliacoes_temp[aluno_id]['feedbacks']
-                avaliacoes.append({
-                    'aluno_nome': aluno_nome,
-                    'notas': notas,
-                    'feedbacks': feedbacks
-                })
-        return {'nomes_eixos': nomes_eixos, 'avaliacoes': avaliacoes}
 
     def _renderizar_tela_sucesso(self):
         """Renderiza a tela de sucesso após salvar avaliações."""
@@ -260,20 +241,3 @@ class AvaliacaoView:
                 st.markdown(f"- **{eixo}**: Nota **{nota}** | Feedback: _{feedback}_")
             st.markdown("---")
     
-    def mostrar_mensagem_erro(self, mensagem: str):
-        """
-        Mostra mensagem de erro na tela
-        
-        Args:
-            mensagem: Mensagem de erro a ser exibida
-        """
-        st.error(f"❌ {mensagem}")
-    
-    def mostrar_mensagem_sucesso(self, mensagem: str):
-        """
-        Mostra mensagem de sucesso na tela
-        
-        Args:
-            mensagem: Mensagem de sucesso a ser exibida
-        """
-        st.success(f"✅ {mensagem}")

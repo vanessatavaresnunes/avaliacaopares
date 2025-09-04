@@ -1,4 +1,3 @@
-from src.models.usuario import UsuarioModel
 """
 Modelo de dados para avaliações de pares.
 Responsável pela estrutura de dados e validações.
@@ -13,6 +12,7 @@ import os
 import unicodedata
 import tempfile
 from src.utils.supabase_storage import upload_json_to_bucket, download_json_from_bucket, list_json_files_in_bucket
+from src.models.usuario import UsuarioModel
 
 
 @dataclass
@@ -34,9 +34,6 @@ class AvaliacaoModel:
         self.diretorio_dados = diretorio_dados
         self.usuario_model = UsuarioModel()
     
-    def _criar_diretorio_se_nao_existe(self):
-        """Cria o diretório de dados se não existir"""
-        Path(self.diretorio_dados).mkdir(parents=True, exist_ok=True)
     
     def salvar_avaliacoes(self, id_avaliador: int, time: str, sprint: str, 
                          avaliacoes: Dict, nomes_eixos: List[str], nome_avaliador: str) -> str:

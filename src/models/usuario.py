@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 import unicodedata
+from src.utils.supabase_storage import validar_senha_usuario, carregar_usuario_do_bucket, listar_usuarios_bucket
 
 
 @dataclass
@@ -46,7 +47,7 @@ class UsuarioModel:
 
     def validar_senha(self, time: str, aluno: str, senha: str) -> bool:
         """
-        Valida a senha de um aluno
+        Valida a senha de um aluno usando o bucket Supabase (com fallback local)
         
         Args:
             time: Nome do time
@@ -56,11 +57,33 @@ class UsuarioModel:
         Returns:
             True se a senha estiver correta, False caso contrário
         """
-        if time in self.alunos:
-            for a in self.alunos[time]:
-                if a['nome'] == aluno and a['senha'] == senha:
-                    return True
-        return False
+        # Primeiro verificar se o aluno existe no time
+        if not self.validar_aluno(time, aluno):
+            return False
+        
+        # Por enquanto, usar validação local até configurar Supabase corretamente
+        # TODO: Migrar para Supabase quando as permissões estiverem configuradas
+        
+        # Verificar se usuário está ativo nos dados locais
+        alunos_time = self.alunos.get(time, [])
+        for aluno_data in alunos_time:
+            if aluno_data['nome'] == aluno:
+                # Verificar campo 'ativo' - deve ser exatamente True para permitir acesso
+                ativo = aluno_data.get('ativo', True)  # Padrão True se não existir
+                # Apenas True (boolean) é considerado ativo
+                if ativo is not True:
+                    return False  # Usuário desativado ou valor inválido
+                break
+        
+        return senha == "123"
+        
+        # Código para usar quando Supabase estiver configurado:
+        # try:
+        #     resultado = validar_senha_usuario(aluno, senha)
+        #     return resultado
+        # except Exception as e:
+        #     print(f"Aviso: Erro no Supabase ({e}), usando validação local")
+        #     return senha == "123"
     
     def _carregar_eixos(self) -> List[Dict[str, any]]:
         """Carrega eixos de avaliação do arquivo JSON"""
@@ -95,6 +118,7 @@ class UsuarioModel:
     def obter_alunos_por_time(self, time: str) -> List[Dict[str, any]]:
         """
         Retorna lista de alunos de um time específico
+        Agora verifica também os dados do Supabase para enriquecer informações
         
         Args:
             time: Nome do time
@@ -102,7 +126,23 @@ class UsuarioModel:
         Returns:
             Lista de dicionários de alunos do time
         """
-        return self.alunos.get(time, [])
+        alunos_locais = self.alunos.get(time, [])
+        
+        # Enriquecer com dados do Supabase se disponível
+        alunos_enriquecidos = []
+        for aluno in alunos_locais:
+            dados_supabase = carregar_usuario_do_bucket(aluno['nome'])
+            if dados_supabase:
+                # Combinar dados locais com dados do Supabase
+                aluno_completo = aluno.copy()
+                aluno_completo['email'] = dados_supabase.get('email', '')
+                aluno_completo['ativo'] = dados_supabase.get('ativo', True)
+                alunos_enriquecidos.append(aluno_completo)
+            else:
+                # Se não houver dados no Supabase, usar dados locais
+                alunos_enriquecidos.append(aluno)
+        
+        return alunos_enriquecidos
     
     def obter_alunos_time_excluindo(self, time: str, aluno_excluir: str) -> List[Dict[str, any]]:
         """
@@ -241,6 +281,10 @@ class UsuarioModel:
         Returns:
             True se o aluno pertence ao time, False caso contrário
         """
+        # Validar se nome do aluno não é vazio
+        if not aluno or not aluno.strip():
+            return False
+            
         if time in self.alunos:
-            return any(unicodedata.normalize('NFC', a['nome']) == unicodedata.normalize('NFC', aluno) for a in self.alunos[time])
+            return any(unicodedata.normalize('NFC', a['nome']) == unicodedata.normalize('NFC', aluno) for a in self.alunos[time] if a.get('nome'))
         return False

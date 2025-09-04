@@ -4,7 +4,7 @@ dados/
 !data/alunos.json
 !data/config.json
 !data/eixos.json
-
+.Claude
 # Permitir versionamento da pasta data/ e arquivos essenciais
 !data/
 

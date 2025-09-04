@@ -1,0 +1,29 @@
+{
+    "Grupo 1": [
+        {
+            "nome": "Gabriel Santos do Nascimento",
+            "senha": "123",
+            "id": 10
+        },
+        {
+            "nome": "Giacomo Zema Matizonkas", 
+            "senha": "123",
+            "id": 11
+        },
+        {
+            "nome": "Iasmim Santos Silva de Jesus",
+            "senha": "123", 
+            "id": 13
+        },
+        {
+            "nome": "Lucas Matheus Nunes",
+            "senha": "123",
+            "id": 21
+        },
+        {
+            "nome": "Renan Sabino dos Reis",
+            "senha": "123",
+            "id": 32
+        }
+    ]
+}
