@@ -4,7 +4,7 @@
         "descricao": "Avalia o cumprimento das entregas da sprint. Leva em consideração se os prazos foram respeitados, se os formatos estavam corretos e se os artefatos foram bem executados.",
         "observacoes": [
             "GitHub: Verificar se o colega fez commits dentro do prazo",
-            "GitHub: Verificar se o colega dez entregas funcionais",
+            "GitHub: Verificar se o colega fez entregas funcionais",
             "GitHub: Verificar se o colega seguiu padrões de projeto, nomeou corretamente os PRs",
             "Trello: Verificar se o colega cumpriu com as tarefas atribuídas a ele e elas foram finalizadas no prazo.",
             "Daily: Verificar se o colega foi atuante nas dailies, se posicionando sobre o que foi feito e o que vai fazer.",

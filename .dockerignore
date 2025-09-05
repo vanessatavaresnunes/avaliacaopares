@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.vscode/
+.idea/
+htmlcov/
+dados/
+.streamlit/
+.claude/

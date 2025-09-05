@@ -48,72 +48,6 @@ def gerar_hash_senha(senha: str) -> str:
     return hashlib.sha256(senha.encode('utf-8')).hexdigest()
 
 
-def salvar_usuario_no_bucket(nome_usuario: str, email: str, senha: str, dados_extras: Dict = None) -> bool:
-    """
-    Salva dados do usuário no bucket usuarios_inteli
-    
-    Args:
-        nome_usuario: Nome do usuário
-        email: Email do usuário 
-        senha: Senha em texto plano (será hasheada)
-        dados_extras: Dados adicionais do usuário (opcional)
-        
-    Returns:
-        True se salvou com sucesso, False caso contrário
-    """
-    try:
-        # Gerar hash da senha
-        senha_hash = gerar_hash_senha(senha)
-        
-        # Estrutura dos dados do usuário
-        dados_usuario = {
-            "nome": nome_usuario,
-            "email": email,
-            "senha_hash": senha_hash,
-            "ativo": True
-        }
-        
-        # Adicionar dados extras se fornecidos
-        if dados_extras:
-            dados_usuario.update(dados_extras)
-        
-        # Criar arquivo temporário
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as tmp_file:
-            json.dump(dados_usuario, tmp_file, ensure_ascii=False, indent=2)
-            arquivo_temp = tmp_file.name
-        
-        # Nome do arquivo no bucket (usar nome normalizado do usuário)
-        nome_arquivo = f"{nome_usuario.replace(' ', '_').lower()}.json"
-        
-        # Upload para o bucket de usuários
-        supabase = get_supabase_client()
-        
-        # Tentar deletar arquivo existente (se houver)
-        try:
-            supabase.storage.from_(BUCKET_USERS).remove([nome_arquivo])
-        except Exception:
-            pass  # Ignora erro se arquivo não existir
-        
-        # Fazer upload
-        with open(arquivo_temp, "rb") as f:
-            data = f.read()
-        supabase.storage.from_(BUCKET_USERS).upload(path=nome_arquivo, file=data)
-        
-        # Limpar arquivo temporário
-        os.unlink(arquivo_temp)
-        
-        return True
-        
-    except Exception as e:
-        print(f"Erro ao salvar usuário {nome_usuario}: {e}")
-        # Limpar arquivo temporário se houver erro
-        try:
-            if 'arquivo_temp' in locals():
-                os.unlink(arquivo_temp)
-        except:
-            pass
-        return False
-
 
 def carregar_usuario_do_bucket(nome_usuario: str) -> Optional[Dict]:
     """
@@ -184,25 +118,70 @@ def validar_senha_usuario(nome_usuario: str, senha: str) -> bool:
 
 
 def listar_usuarios_bucket() -> List[str]:
-    """
-    Lista todos os usuários disponíveis no bucket
-    
-    Returns:
-        Lista com nomes dos usuários
-    """
+    """Mantido por compatibilidade; não utilizado pelo app principal."""
     try:
         supabase = get_supabase_client()
         files = supabase.storage.from_(BUCKET_USERS).list()
-        
-        # Extrair nomes dos usuários dos arquivos JSON
         usuarios = []
         for arquivo in files:
             if arquivo["name"].endswith(".json"):
                 nome_usuario = arquivo["name"].replace(".json", "").replace("_", " ").title()
                 usuarios.append(nome_usuario)
-        
         return sorted(usuarios)
-        
-    except Exception as e:
-        print(f"Erro ao listar usuários: {e}")
+    except Exception:
         return []
+
+
+def salvar_usuario_no_bucket(nome_usuario: str, email: str, senha: str, dados_extras: Dict = None) -> bool:
+    """
+    Salva/atualiza dados do usuário no bucket de usuários com hash da senha.
+
+    Args:
+        nome_usuario: Nome do usuário
+        email: Email do usuário
+        senha: Nova senha em texto plano (será hasheada)
+        dados_extras: Campos adicionais para persistir (ex.: ativo, primeiro_acesso)
+
+    Returns:
+        True se salvou com sucesso, False caso contrário
+    """
+    try:
+        senha_hash = gerar_hash_senha(senha)
+
+        dados_usuario = {
+            "nome": nome_usuario,
+            "email": email,
+            "senha_hash": senha_hash,
+            "ativo": True,
+        }
+        if dados_extras:
+            dados_usuario.update(dados_extras)
+
+        # Criar arquivo temporário
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8') as tmp_file:
+            json.dump(dados_usuario, tmp_file, ensure_ascii=False, indent=2)
+            arquivo_temp = tmp_file.name
+
+        nome_arquivo = f"{nome_usuario.replace(' ', '_').lower()}.json"
+
+        supabase = get_supabase_client()
+        # Remover existente (ignorar erro)
+        try:
+            supabase.storage.from_(BUCKET_USERS).remove([nome_arquivo])
+        except Exception:
+            pass
+        # Upload
+        with open(arquivo_temp, "rb") as f:
+            data = f.read()
+        supabase.storage.from_(BUCKET_USERS).upload(path=nome_arquivo, file=data)
+
+        os.unlink(arquivo_temp)
+        return True
+    except Exception as e:
+        print(f"Erro ao salvar usuário {nome_usuario}: {e}")
+        try:
+            if 'arquivo_temp' in locals():
+                os.unlink(arquivo_temp)
+        except Exception:
+            pass
+        return False

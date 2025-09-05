@@ -76,9 +76,21 @@ class VisualizacaoView:
             time_filtro = st.selectbox("Filtrar por Time:", times)
         
         with col2:
-            ids_avaliadores = df['id_avaliador'].unique()
-            nomes_avaliadores = {self.controller.usuario_model.obter_nome_aluno(id_): id_ for id_ in ids_avaliadores}
-            avaliador_selecionado = st.selectbox("Filtrar por Avaliador:", ['Todos'] + sorted(list(nomes_avaliadores.keys())))
+            import pandas as pd
+            ids_avaliadores = pd.unique(df['id_avaliador'].dropna())
+            nomes_avaliadores = {}
+            for id_ in ids_avaliadores:
+                try:
+                    id_int = int(id_)
+                except Exception:
+                    id_int = id_
+                nome = self.controller.usuario_model.obter_nome_aluno(id_int)
+                if not nome or not isinstance(nome, str):
+                    nome = f"ID {id_int}"
+                nomes_avaliadores[nome] = id_int
+
+            opcoes_avaliador = ['Todos'] + sorted(list(nomes_avaliadores.keys()), key=lambda x: x or "")
+            avaliador_selecionado = st.selectbox("Filtrar por Avaliador:", opcoes_avaliador)
             id_avaliador_filtro = nomes_avaliadores.get(avaliador_selecionado)
 
         with col3:

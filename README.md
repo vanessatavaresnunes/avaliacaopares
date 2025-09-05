@@ -112,10 +112,7 @@ python -m pytest tests/ -v
 python -m pytest tests/ -v --cov=src --cov-report=html --cov-report=term
 ```
 
-**Usando script de qualidade completo:**
-```bash
-python scripts/run_tests.py
-```
+<!-- Removido: script de qualidade completo -->
 
 ### Relatórios
 - **Terminal**: Exibe cobertura diretamente
@@ -138,6 +135,18 @@ streamlit run app.py
 
 # Visualizador de dados
 streamlit run visualizador_mvc.py
+```
+
+### Docker Compose
+- Somente o sistema (alunos) `app.py`:
+```bash
+docker compose -f docker-compose.app.yml up --build
+# porta padrão: 8501 (configurável via APP_PORT)
+```
+- Somente o painel de análises (professora):
+```bash
+docker compose -f docker-compose.viz.yml up --build
+# porta padrão: 8502 (configurável via VIZ_PORT)
 ```
 
 ### 🔧 Comandos por Sistema
@@ -302,7 +311,7 @@ Este aplicativo permite:
 ### Executar Testes
 ```bash
 # Executar todos os testes
-python scripts/run_tests.py
+<!-- Removido: script de qualidade completo -->
 
 # Executar apenas testes unitários
 python -m pytest tests/ -v

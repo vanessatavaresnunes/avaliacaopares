@@ -52,6 +52,10 @@ class AvaliacaoController:
             st.session_state.aluno_atual = aluno
             st.session_state.aluno_id_atual = self.usuario_model.obter_id_aluno(aluno)
             st.session_state.time_atual = time
+            
+            # Verificar se é primeiro acesso
+            st.session_state.primeiro_acesso = self.usuario_model.verificar_primeiro_acesso(aluno)
+            
             return True
         return False
     
@@ -66,6 +70,29 @@ class AvaliacaoController:
             del st.session_state.time_atual
         if 'avaliacoes_temp' in st.session_state:
             del st.session_state.avaliacoes_temp
+        if 'primeiro_acesso' in st.session_state:
+            del st.session_state.primeiro_acesso
+    
+    def ativar_usuario(self, nova_senha: str) -> bool:
+        """
+        Ativa o usuário e altera sua senha no primeiro acesso
+        
+        Args:
+            nova_senha: Nova senha do usuário
+            
+        Returns:
+            True se ativado com sucesso, False caso contrário
+        """
+        aluno_atual = st.session_state.get('aluno_atual')
+        if not aluno_atual:
+            return False
+            
+        # Alterar senha e marcar como ativo
+        sucesso = self.usuario_model.alterar_senha_usuario(aluno_atual, nova_senha)
+        if sucesso:
+            # Atualizar flag de primeiro acesso
+            st.session_state.primeiro_acesso = False
+        return sucesso
     
     def esta_logado(self) -> bool:
         """
@@ -254,9 +281,14 @@ class AvaliacaoController:
             mensagens_erro = []
 
             # Checar soma das notas
-            if not all(validacoes['soma_notas'].values()):
-                eixos_invalidos = [eixo for eixo, valido in validacoes['soma_notas'].items() if not valido]
-                mensagens_erro.append(f"A soma das notas para os eixos {', '.join(eixos_invalidos)} está incorreta.")
+            eixos_soma_invalidos = [
+                eixo for eixo, detalhes in validacoes['soma_notas'].items()
+                if not detalhes.get('valido', False)
+            ]
+            if eixos_soma_invalidos:
+                mensagens_erro.append(
+                    f"A soma das notas para os eixos {', '.join(eixos_soma_invalidos)} está incorreta."
+                )
 
             # Checar notas individuais
             if not validacoes['notas_individuais']:

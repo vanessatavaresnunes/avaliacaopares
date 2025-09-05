@@ -299,10 +299,37 @@ class AvaliacaoModel:
                 'times': 0,
                 'periodo': 'N/A'
             }
+
+        # Calcular período de forma robusta (timestamp pode ser int epoch ou string)
+        periodo = 'N/A'
+        ts = df['timestamp']
+        try:
+            # Tentar como epoch (int/float)
+            ts_epoch = pd.to_numeric(ts, errors='coerce')
+            ts_dt = pd.to_datetime(ts_epoch, unit='s', errors='coerce')
+            if ts_dt.notna().any():
+                ts_dt = ts_dt.dropna()
+                periodo = f"{ts_dt.min().strftime('%Y%m%d')} a {ts_dt.max().strftime('%Y%m%d')}"
+            else:
+                # Tentar parse genérico de strings
+                ts_gen = pd.to_datetime(ts, errors='coerce')
+                if ts_gen.notna().any():
+                    ts_gen = ts_gen.dropna()
+                    periodo = f"{ts_gen.min().strftime('%Y%m%d')} a {ts_gen.max().strftime('%Y%m%d')}"
+                else:
+                    # Fallback: usar strings e fatiar (assumindo formato YYYYMMDD...)
+                    ts_str = ts.astype(str)
+                    periodo = f"{ts_str.min()[:8]} a {ts_str.max()[:8]}"
+        except Exception:
+            try:
+                ts_str = ts.astype(str)
+                periodo = f"{ts_str.min()[:8]} a {ts_str.max()[:8]}"
+            except Exception:
+                periodo = 'N/A'
         
         return {
             'total_avaliacoes': len(df),
             'alunos_avaliadores': df['id_avaliador'].nunique(),
             'times': df['time'].nunique(),
-            'periodo': f"{df['timestamp'].min()[:8]} a {df['timestamp'].max()[:8]}"
+            'periodo': periodo
         }

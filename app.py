@@ -7,6 +7,7 @@ import streamlit as st
 from src.controllers.avaliacao_controller import AvaliacaoController
 from src.views.login_view import LoginView
 from src.views.avaliacao_view import AvaliacaoView
+from src.views.ativacao_view import AtivacaoView
 
 
 def configurar_pagina():
@@ -33,9 +34,15 @@ def main():
         login_view = LoginView(controller)
         login_view.renderizar()
     else:
-        # Mostrar tela de avaliação
-        avaliacao_view = AvaliacaoView(controller)
-        avaliacao_view.renderizar()
+        # Verificar se é o primeiro acesso
+        if st.session_state.get('primeiro_acesso', False):
+            # Mostrar tela de ativação
+            ativacao_view = AtivacaoView(controller)
+            ativacao_view.renderizar()
+        else:
+            # Mostrar tela de avaliação
+            avaliacao_view = AvaliacaoView(controller)
+            avaliacao_view.renderizar()
 
 
 if __name__ == "__main__":

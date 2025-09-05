@@ -9,7 +9,12 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass
 import unicodedata
-from src.utils.supabase_storage import validar_senha_usuario, carregar_usuario_do_bucket, listar_usuarios_bucket
+from src.utils.supabase_storage import (
+    validar_senha_usuario,
+    carregar_usuario_do_bucket,
+    listar_usuarios_bucket,
+    salvar_usuario_no_bucket,
+)
 
 
 @dataclass
@@ -47,43 +52,18 @@ class UsuarioModel:
 
     def validar_senha(self, time: str, aluno: str, senha: str) -> bool:
         """
-        Valida a senha de um aluno usando o bucket Supabase (com fallback local)
-        
-        Args:
-            time: Nome do time
-            aluno: Nome do aluno
-            senha: Senha a ser verificada
-            
-        Returns:
-            True se a senha estiver correta, False caso contrário
+        Validação exclusiva via Supabase (sem fallback local).
+
+        - Garante que o aluno pertence ao time selecionado
+        - Verifica senha e ativo no bucket de usuários
         """
-        # Primeiro verificar se o aluno existe no time
         if not self.validar_aluno(time, aluno):
             return False
-        
-        # Por enquanto, usar validação local até configurar Supabase corretamente
-        # TODO: Migrar para Supabase quando as permissões estiverem configuradas
-        
-        # Verificar se usuário está ativo nos dados locais
-        alunos_time = self.alunos.get(time, [])
-        for aluno_data in alunos_time:
-            if aluno_data['nome'] == aluno:
-                # Verificar campo 'ativo' - deve ser exatamente True para permitir acesso
-                ativo = aluno_data.get('ativo', True)  # Padrão True se não existir
-                # Apenas True (boolean) é considerado ativo
-                if ativo is not True:
-                    return False  # Usuário desativado ou valor inválido
-                break
-        
-        return senha == "123"
-        
-        # Código para usar quando Supabase estiver configurado:
-        # try:
-        #     resultado = validar_senha_usuario(aluno, senha)
-        #     return resultado
-        # except Exception as e:
-        #     print(f"Aviso: Erro no Supabase ({e}), usando validação local")
-        #     return senha == "123"
+        try:
+            return validar_senha_usuario(aluno, senha)
+        except Exception as e:
+            print(f"Erro na validação via Supabase: {e}")
+            return False
     
     def _carregar_eixos(self) -> List[Dict[str, any]]:
         """Carrega eixos de avaliação do arquivo JSON"""
@@ -288,3 +268,61 @@ class UsuarioModel:
         if time in self.alunos:
             return any(unicodedata.normalize('NFC', a['nome']) == unicodedata.normalize('NFC', aluno) for a in self.alunos[time] if a.get('nome'))
         return False
+    
+    def alterar_senha_usuario(self, nome_usuario: str, nova_senha: str) -> bool:
+        """
+        Altera a senha de um usuário e marca como ativo
+        
+        Args:
+            nome_usuario: Nome do usuário
+            nova_senha: Nova senha em texto plano
+            
+        Returns:
+            True se alterou com sucesso, False caso contrário
+        """
+        try:
+            # Verificar se usuário já existe no bucket
+            dados_usuario = carregar_usuario_do_bucket(nome_usuario)
+            
+            if not dados_usuario:
+                # Se usuário não existe, criar com dados padrão
+                dados_usuario = {
+                    "nome": nome_usuario,
+                    "email": f"{nome_usuario.replace(' ', '.').lower()}@exemplo.com",
+                    "ativo": True,
+                    "primeiro_acesso": False
+                }
+            else:
+                # Atualizar dados existentes
+                dados_usuario["ativo"] = True
+                dados_usuario["primeiro_acesso"] = False
+            
+            # Salvar usuário com nova senha
+            sucesso = salvar_usuario_no_bucket(
+                nome_usuario=nome_usuario,
+                email=dados_usuario.get("email", f"{nome_usuario.replace(' ', '.').lower()}@exemplo.com"),
+                senha=nova_senha,
+                dados_extras=dados_usuario
+            )
+            
+            return sucesso
+            
+        except Exception as e:
+            print(f"Erro ao alterar senha do usuário {nome_usuario}: {e}")
+            return False
+    
+    def verificar_primeiro_acesso(self, nome_usuario: str) -> bool:
+        """
+        Verifica se é o primeiro acesso do usuário
+        
+        Args:
+            nome_usuario: Nome do usuário
+            
+        Returns:
+            True se é primeiro acesso, False caso contrário
+        """
+        dados_usuario = carregar_usuario_do_bucket(nome_usuario)
+        if not dados_usuario:
+            # Se não há dados no bucket, considerar como primeiro acesso
+            return True
+        return dados_usuario.get('primeiro_acesso', True)

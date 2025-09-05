@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  app:
+    build: .
+    container_name: avaliacao-pares-app
+    command: streamlit run app.py --server.address=0.0.0.0 --server.port=${APP_PORT:-8501}
+    ports:
+      - "${APP_PORT:-8501}:${APP_PORT:-8501}"
+    env_file:
+      - .env
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:${APP_PORT:-8501} >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+

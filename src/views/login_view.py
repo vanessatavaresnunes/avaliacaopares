@@ -55,7 +55,11 @@ class LoginView:
             with col_btn2:
                 if st.button("🚀 Entrar no Sistema", type="primary", use_container_width=True):
                     if self.controller.fazer_login(time_selecionado, aluno_selecionado, senha):
-                        st.success(f"✅ Bem-vindo(a), {aluno_selecionado}!")
+                        # Verificar se é primeiro acesso
+                        if st.session_state.get('primeiro_acesso', False):
+                            st.info("🔒 Primeiro acesso detectado. Você será redirecionado para alterar sua senha.")
+                        else:
+                            st.success(f"✅ Bem-vindo(a), {aluno_selecionado}!")
                         st.rerun()
                     else:
                         st.error("❌ Erro no login. Verifique suas credenciais.")
