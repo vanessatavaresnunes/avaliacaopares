@@ -1,0 +1,188 @@
+<%- include('../layouts/main', { title: title, professor: professor, body: `
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard - Professor
+            </h2>
+            <a href="/professor/cadastrar-aluno" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>
+                Cadastrar Aluno
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Total de Alunos</h5>
+                <h3 class="text-primary"><%= alunos.length %></h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-chalkboard-teacher fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Professor</h5>
+                <p class="text-muted"><%= professor.nome %></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-envelope fa-3x text-info mb-3"></i>
+                <h5 class="card-title">Email</h5>
+                <p class="text-muted"><%= professor.email %></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-chart-bar fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Avaliações</h5>
+                <a href="/professor/estatisticas-gerais" class="btn btn-warning btn-sm">
+                    <i class="fas fa-chart-line me-1"></i>
+                    Ver Estatísticas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Dashboard de Cálculos -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Dashboard de Cálculos e Estatísticas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Visualize estatísticas detalhadas, médias por turma, distribuição de notas e análises comparativas dos seus alunos.
+                            </p>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/professor/dashboard-calculos" class="btn btn-success">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    Acessar Dashboard de Cálculos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-tasks me-2"></i>
+                                Alunos por Sprint
+                            </h5>
+                        </div>
+            <div class="card-body">
+                <div class="row">
+                    <% for(let sprint = 1; sprint <= 5; sprint++) { %>
+                        <div class="col-md-2 mb-3">
+                            <div class="card text-center <%= alunosPorSprint[sprint].length > 0 ? 'border-primary' : 'border-secondary' %>">
+                                <div class="card-body">
+                                    <h6 class="card-title">Sprint <%= sprint %></h6>
+                                    <h4 class="<%= alunosPorSprint[sprint].length > 0 ? 'text-primary' : 'text-muted' %>">
+                                        <%= alunosPorSprint[sprint].length %>
+                                    </h4>
+                                    <small class="text-muted">alunos</small>
+                                    <% if (alunosPorSprint[sprint].length > 0) { %>
+                                        <div class="mt-2">
+                                            <a href="/professor/avaliacoes-sprint/<%= sprint %>" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>
+                                                Ver Avaliações
+                                            </a>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>
+                    Lista de Alunos
+                </h5>
+            </div>
+            <div class="card-body">
+                <% if (alunos.length === 0) { %>
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <p>Nenhum aluno cadastrado ainda.</p>
+                        <a href="/professor/cadastrar-aluno" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Cadastrar Primeiro Aluno
+                        </a>
+                    </div>
+                <% } else { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Turma</th>
+                                    <th>Grupo</th>
+                                    <th>Sprint Atual</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% alunos.forEach(function(aluno) { %>
+                                    <tr>
+                                        <td><%= aluno.nome %></td>
+                                        <td><%= aluno.email %></td>
+                                        <td><span class="badge bg-secondary"><%= aluno.turma %></span></td>
+                                        <td><span class="badge bg-info"><%= aluno.grupo %></span></td>
+                                        <td><span class="badge bg-primary">Sprint <%= aluno.sprint_atual %></span></td>
+                                        <td>
+                                            <div class="btn-group-actions">
+                                                <a href="/professor/editar-aluno/<%= aluno.id %>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form method="POST" action="/professor/deletar-aluno/<%= aluno.id %>" class="d-inline" onsubmit="return confirm('Tem certeza que deseja deletar este aluno?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+` }) %>

@@ -1,0 +1,156 @@
+<%- include('../layouts/main', { title: title, aluno: aluno, body: `
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            Dashboard - Aluno
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    Meus Dados
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Nome:</strong></td>
+                        <td><%= aluno.nome %></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td><%= aluno.email %></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Turma:</strong></td>
+                        <td><span class="badge bg-secondary"><%= aluno.turma %></span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Grupo:</strong></td>
+                        <td><span class="badge bg-info"><%= aluno.grupo %></span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                    Professor Orientador
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Nome:</strong></td>
+                        <td><%= professor.nome %></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td><%= professor.email %></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>
+                    Avaliação de Pares
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    <i class="fas fa-users me-2"></i>
+                    Avalie seus colegas de equipe nas diferentes sprints do projeto.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="/aluno/selecionar-sprint" class="btn btn-primary">
+                        <i class="fas fa-play me-2"></i>
+                        Iniciar Avaliações
+                    </a>
+                    <a href="/aluno/avaliar-colegas" class="btn btn-outline-primary">
+                        <i class="fas fa-star me-2"></i>
+                        Continuar Avaliando
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Resultados
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    <i class="fas fa-eye me-2"></i>
+                    Visualize as avaliações que você recebeu dos seus colegas.
+                </p>
+                <div class="d-grid">
+                    <a href="/aluno/resultados-avaliacoes" class="btn btn-success">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Ver Resultados
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Como Funciona
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-1 fa-2x text-primary mb-2"></i>
+                            <h6>Selecione a Sprint</h6>
+                            <small class="text-muted">Escolha qual sprint (1-5) você quer avaliar</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-2 fa-2x text-primary mb-2"></i>
+                            <h6>Avalie seus Colegas</h6>
+                            <small class="text-muted">Dê notas de 1-5 e comentários para cada colega</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-3 fa-2x text-primary mb-2"></i>
+                            <h6>Veja os Resultados</h6>
+                            <small class="text-muted">Visualize as avaliações que recebeu</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+` }) %>

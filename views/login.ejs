@@ -1,0 +1,50 @@
+<%- include('layouts/main', { title: title, body: `
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    Login
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/login">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de Usuário</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="">Selecione o tipo de usuário</option>
+                            <option value="professor">Professor Orientador</option>
+                            <option value="aluno">Aluno</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">Senha</label>
+                        <input type="password" class="form-control" id="senha" name="senha">
+                        <div class="form-text">Para alunos no primeiro login, deixe a senha em branco.</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>
+                            Entrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>
+                    <i class="fas fa-info-circle me-1"></i>
+                    Professores orientadores: vanessa.nunes@prof.inteli.edu.br e hermano.peixoto@prof.inteli.edu.br
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+` }) %>

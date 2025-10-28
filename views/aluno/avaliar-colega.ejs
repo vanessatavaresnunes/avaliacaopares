@@ -1,0 +1,188 @@
+<%- include('../layouts/main', { title: title, aluno: aluno, body: `
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Avaliar <%= colega.nome %>
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Sprint <%= sprint %></strong> - Avalie o desempenho de <strong><%= colega.nome %></strong> em cada eixo de avaliação.
+                </div>
+                
+                <form method="POST" action="/aluno/processar-avaliacao/<%= colega.id %>" id="avaliacaoForm">
+                    <% eixos.forEach(function(eixo) { %>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    <%= eixo.nome %>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p class="text-muted"><%= eixo.descricao %></p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="nota_<%= eixo.id %>" class="form-label">
+                                        <strong>Nota (0 a 3)</strong>
+                                    </label>
+                                    <div class="row">
+                                        <% for(let i = 0; i <= 3; i++) { %>
+                                            <div class="col">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="nota_<%= eixo.id %>" id="nota<%= eixo.id %>_<%= i %>" value="<%= i %>" 
+                                                           <%= avaliacoesExistentes[eixo.id] && avaliacoesExistentes[eixo.id].nota === i ? 'checked' : '' %> required>
+                                                    <label class="form-check-label d-flex flex-column align-items-center" for="nota<%= eixo.id %>_<%= i %>">
+                                                        <span class="fs-4"><%= i %></span>
+                                                        <small class="text-muted">
+                                                            <% if (i === 0) { %>Não Atendeu<% } %>
+                                                            <% if (i === 1) { %>Atendeu Parcialmente<% } %>
+                                                            <% if (i === 2) { %>Atendeu Bem<% } %>
+                                                            <% if (i === 3) { %>Atendeu Excelentemente<% } %>
+                                                        </small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="feedback_<%= eixo.id %>" class="form-label">
+                                        <strong>Feedback</strong>
+                                    </label>
+                                    <textarea class="form-control" id="feedback_<%= eixo.id %>" name="feedback_<%= eixo.id %>" rows="3" 
+                                              placeholder="Forneça um feedback específico sobre o desempenho neste eixo..." required><%= avaliacoesExistentes[eixo.id] ? avaliacoesExistentes[eixo.id].feedback : '' %></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-lightbulb me-1"></i>
+                                        Seja específico e construtivo. Mencione exemplos concretos quando possível.
+                                    </div>
+                                </div>
+                                
+                                <% if (eixo.observacoes && eixo.observacoes.length > 0) { %>
+                                    <div class="mt-3">
+                                        <h6 class="text-muted">Observações importantes:</h6>
+                                        <ul class="list-unstyled small text-muted">
+                                            <% eixo.observacoes.forEach(function(obs) { %>
+                                                <li><i class="fas fa-arrow-right me-1"></i><%= obs %></li>
+                                            <% }); %>
+                                        </ul>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="/aluno/avaliar-colegas" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>
+                            Salvar Avaliações
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <small class="text-muted">
+                            <i class="fas fa-user me-1"></i>
+                            <strong>Avaliador:</strong><br>
+                            <%= aluno.nome %>
+                        </small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">
+                            <i class="fas fa-user-check me-1"></i>
+                            <strong>Avaliado:</strong><br>
+                            <%= colega.nome %>
+                        </small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted">
+                            <i class="fas fa-tasks me-1"></i>
+                            <strong>Sprint:</strong><br>
+                            Sprint <%= sprint %>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validação em tempo real
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        // Adicionar feedback visual
+        const eixoId = this.name.split('_')[1];
+        document.querySelectorAll(`input[name="nota_${eixoId}"]`).forEach(r => {
+            r.closest('.form-check').classList.remove('border-primary', 'bg-primary-subtle');
+        });
+        this.closest('.form-check').classList.add('border-primary', 'bg-primary-subtle');
+    });
+});
+
+// Selecionar notas existentes se houver
+<% eixos.forEach(function(eixo) { %>
+    <% if (avaliacoesExistentes[eixo.id]) { %>
+        document.getElementById('nota<%= eixo.id %>_<%= avaliacoesExistentes[eixo.id].nota %>').closest('.form-check').classList.add('border-primary', 'bg-primary-subtle');
+    <% } %>
+<% }); %>
+
+// Validação do formulário
+document.getElementById('avaliacaoForm').addEventListener('submit', function(e) {
+    const eixos = <%= JSON.stringify(eixos) %>;
+    let isValid = true;
+    
+    eixos.forEach(eixo => {
+        const nota = document.querySelector(`input[name="nota_${eixo.id}"]:checked`);
+        const feedback = document.getElementById(`feedback_${eixo.id}`).value.trim();
+        
+        if (!nota || !feedback) {
+            isValid = false;
+            if (!nota) {
+                document.getElementById(`nota_${eixo.id}`).classList.add('is-invalid');
+            }
+            if (!feedback) {
+                document.getElementById(`feedback_${eixo.id}`).classList.add('is-invalid');
+            }
+        }
+    });
+    
+    if (!isValid) {
+        e.preventDefault();
+        alert('Por favor, preencha todas as notas e feedbacks antes de salvar.');
+    }
+});
+</script>
+
+<style>
+.form-check {
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-check:hover {
+    border-color: #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.form-check.border-primary {
+    border-color: #0d6efd !important;
+    background-color: rgba(13, 110, 253, 0.1) !important;
+}
+</style>
+` }) %>

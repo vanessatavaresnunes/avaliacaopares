@@ -1,349 +1,220 @@
 # Sistema de Avaliação de Pares
 
-Um aplicativo Streamlit para avaliação de pares em equipes, onde cada aluno avalia seus colegas de time em 3 eixos diferentes.
+Sistema web para avaliação de pares entre alunos, desenvolvido com Node.js, Express.js e SQLite.
 
-**🔄 Versão 2.0 - Reescrita com padrão MVC e boas práticas de programação**
+## 🎯 Funcionalidades
 
-## 🏗️ Arquitetura
+- **Login de Professores Orientadores**: Acesso restrito para professores cadastrados
+- **Login de Alunos**: Acesso para alunos cadastrados pelos professores
+- **Primeiro Login de Alunos**: Sistema de definição de senha com dupla verificação no primeiro acesso
+- **Gerenciamento de Alunos**: Professores podem cadastrar, editar e excluir alunos
+- **Seleção de Turma e Grupo**: Dropdowns para turmas (T01-T30) e grupos (G1-G10)
+- **Dashboard Personalizado**: Interface diferenciada para professores e alunos
+- **Sistema de Sprints**: Avaliação por sprints (1 a 5) com seleção dinâmica
+- **Avaliação de Colegas**: Sistema completo de avaliação entre pares de equipe
+- **Busca Inteligente**: Encontra colegas da mesma turma, grupo e sprint
+- **Sistema de Notas**: Avaliação de 0 a 3 com comentários obrigatórios
+- **Resultados Detalhados**: Visualização de estatísticas e feedback recebido
+- **Sistema de Eixos**: 3 eixos de avaliação com descrições detalhadas
 
-O projeto foi reescrito seguindo o padrão **MVC (Model-View-Controller)** e boas práticas de programação:
+## Estrutura do Projeto
 
-- **📁 Models**: Estrutura de dados e regras de negócio
-- **🎮 Controllers**: Lógica de coordenação entre models e views
-- **👁️ Views**: Interface do usuário e apresentação
-- **🧪 Tests**: Testes unitários e de integração
-- **🔧 Scripts**: Ferramentas de desenvolvimento
+```
+avaliacaopares/
+├── config/
+│   └── db.js                 # Configuração do banco SQLite
+├── controllers/
+│   ├── AuthController.js     # Autenticação e middleware
+│   ├── ProfessorController.js # Funcionalidades do professor
+│   └── AlunoController.js    # Funcionalidades do aluno
+├── models/
+│   ├── Professor.js          # Modelo do Professor
+│   ├── Aluno.js              # Modelo do Aluno
+│   ├── Avaliacao.js          # Modelo da Avaliação
+│   └── Eixo.js               # Modelo dos Eixos de Avaliação
+├── views/
+│   ├── layouts/
+│   │   └── main.ejs          # Layout principal
+│   ├── aluno/                # Views específicas do aluno
+│   ├── professor/            # Views específicas do professor
+│   ├── login.ejs             # Página de login
+│   └── 404.ejs               # Página de erro 404
+├── public/
+│   ├── css/                  # Estilos CSS
+│   └── js/                   # Scripts JavaScript
+├── scripts/
+│   ├── migrate.js            # Script de migração (limpo)
+│   ├── init-db.js            # Script de inicialização (limpo)
+│   └── create-professors.js  # Script para criar professores (no .gitignore)
+├── database/
+│   └── avaliacao_pares.db    # Banco de dados SQLite
+├── package.json               # Dependências do projeto
+├── server.js                  # Servidor Express principal
+└── README.md                  # Este arquivo
+```
 
-## Funcionalidades
+## 🎯 Eixos de Avaliação
 
-- 🔐 **Tela de Login**: Seleção de time e aluno
-- 📊 **Matriz de Avaliação**: Interface para avaliar colegas em 3 eixos
-- 📋 **Descrições Detalhadas**: Cada eixo inclui descrição e lista de observações específicas
-- ✅ **Validação Automática**: Garante que a soma das notas seja igual ao número de colegas + 1
-- 💬 **Feedback Textual**: Campo para comentários sobre cada colega
-- 💾 **Salvamento em JSON**: Dados salvos em formato eficiente
-- 📈 **Relatórios**: Arquivos individuais e consolidados
-- ⚙️ **Configuração Flexível**: Eixos, alunos e configurações via arquivos JSON
+O sistema utiliza 3 eixos de avaliação baseados na metodologia do Inteli:
 
-## Eixos de Avaliação
+### 1. Entregas Reais
+Avalia o cumprimento das entregas da sprint. Leva em consideração se os prazos foram respeitados, se os formatos estavam corretos e se os artefatos foram bem executados.
 
-O sistema agora utiliza configurações baseadas em JSON para maior flexibilidade:
+**Observações importantes:**
+- GitHub: Verificar se o colega fez commits dentro do prazo
+- Trello: Verificar se o colega cumpriu com as tarefas atribuídas
+- Daily: Verificar se o colega foi atuante nas dailies
 
-### Eixos Atuais
-1. **Entregas reais**: Avalia o cumprimento das entregas da sprint
-2. **Valor Percebido**: Avalia o impacto das entregas para o grupo
-3. **Caixa de Ferramentas**: Avalia o desenvolvimento técnico do aluno
+### 2. Valor Percebido
+Avalia o impacto das entregas para o grupo durante a sprint. Deve levar em consideração o valor agregado para o projeto, se houve a geração de novas ideias e achados valiosos.
 
-### Configuração via JSON
-- `data/alunos.json`: Lista de alunos organizados por grupos
-- `data/eixos.json`: Definição dos eixos com descrições e observações
-- `data/config.json`: Configurações do sistema (notas mín/máx, diretório)
+**Observações importantes:**
+- GitHub: Verificar se o colega entregou algo que destravou uma etapa importante
+- Trello: Verificar se as tarefas contribuíram significativamente para o avanço
+- Daily: Verificar se o colega compartilhou ideias que ajudaram o grupo
 
-Cada eixo inclui:
-- **Descrição detalhada** do que avaliar
-- **Lista de observações** específicas para verificar (GitHub, Trello, Daily, etc.)
+### 3. Caixa de Ferramentas
+Avalia o desenvolvimento técnico do aluno, verificando se a pessoa evoluiu e absorveu os conceitos técnicos, conseguindo aplicá-los na prática.
+
+**Observações importantes:**
+- GitHub: Verificar se o colega usou conceitos técnicos aprendidos
+- Trello: Verificar se o colega assumiu tarefas técnicas mais desafiadoras
+- Daily: Verificar se o colega demonstra domínio técnico
 
 ## 📦 Instalação
 
-### 🖥️ Instalação Cross-Platform (Recomendada)
+### Pré-requisitos
+- Node.js (versão 14 ou superior)
+- npm
 
-**Windows, macOS e Linux:**
+### Instalação
 
+1. **Clone o repositório:**
 ```bash
-# Opção 1: Script automático
-python install.py
-
-# Opção 2: Instalação manual
-pip install -r requirements.txt
+git clone <url-do-repositorio>
+cd avaliacaopares
 ```
 
-### 🔧 Instalação Manual por Sistema
-
-**Windows:**
-```cmd
-# CMD ou PowerShell
-python -m pip install -r requirements.txt
-```
-
-**macOS/Linux:**
+2. **Instale as dependências:**
 ```bash
-# Terminal
-pip3 install -r requirements.txt
-# ou
-python3 -m pip install -r requirements.txt
+npm install
 ```
 
-### 📋 Pré-requisitos
-- Python 3.8 ou superior
-- pip (geralmente vem com Python)
-
-### Estrutura do Projeto
-```
-AvaliacaoParesv2/
-├── src/                    # Código fonte principal
-│   ├── models/            # Modelos de dados
-│   ├── controllers/       # Controllers
-│   ├── views/            # Views (interfaces)
-│   └── utils/            # Utilitários (Supabase)
-├── data/                  # Configurações em JSON
-│   ├── alunos.json       # Lista de alunos por grupos
-│   ├── eixos.json        # Definição dos eixos
-│   └── config.json       # Configurações do sistema
-├── tests/                 # Testes unitários
-├── scripts/              # Scripts de desenvolvimento
-├── docs/                 # Documentação da API
-├── dados/                # Dados salvos (criado automaticamente)
-├── app.py                # Aplicativo principal (MVC)
-├── visualizador_mvc.py   # Visualizador (MVC)
-└── requirements.txt      # Dependências
-```
-
-## 🧪 Testes
-
-### Executar Testes
-
-**Comando básico:**
+3. **Inicialize o banco de dados:**
 ```bash
-python -m pytest tests/ -v
+npm run init-db
 ```
 
-**Com cobertura de código:**
+4. **Inicie o servidor:**
 ```bash
-python -m pytest tests/ -v --cov=src --cov-report=html --cov-report=term
+npm start
 ```
 
-**Usando script de qualidade completo:**
-```bash
-python scripts/run_tests.py
+5. **Acesse a aplicação:**
 ```
-
-### Relatórios
-- **Terminal**: Exibe cobertura diretamente
-- **HTML**: Relatório detalhado em `htmlcov/index.html`
-- **Qualidade**: Script roda testes + formatação + style check
-
-### Estrutura dos Testes
-- `test_avaliacao_model.py`: Testes do modelo de avaliação
-- `test_analise_calculo.py`: Testes de cálculos matemáticos
+http://localhost:3000
+```
 
 ## 🚀 Como Usar
 
-### 🖥️ Cross-Platform (Recomendado)
+### Para Professores:
 
-**Windows, macOS e Linux:**
+1. **Login**: Use o email e senha do professor orientador
+2. **Cadastrar Alunos**: 
+   - Preencha nome e email do aluno
+   - Selecione turma (T01-T30) e grupo (G1-G10)
+   - O aluno será criado sem senha
+3. **Gerenciar Alunos**: Edite ou exclua alunos através dos botões de ação
+4. **Visualizar Avaliações**: Veja todas as avaliações por sprint
 
-```bash
-# Aplicativo principal
-streamlit run app.py
+### Para Alunos:
 
-# Visualizador de dados
-streamlit run visualizador_mvc.py
-```
+1. **Primeiro Login**: 
+   - Use apenas o email (deixe a senha em branco)
+   - Será redirecionado para definir uma senha pessoal
+   - **Dupla verificação**: Digite a senha duas vezes para confirmar
+   - Indicadores visuais mostram se as senhas coincidem
+   - Após definir a senha, terá acesso ao dashboard
+2. **Login Normal**: Use email e senha definida anteriormente
+3. **Dashboard**: Visualize seus dados e informações do professor orientador
+4. **Avaliação de Pares**:
+   - **Selecionar Sprint**: Escolha qual sprint (1-5) avaliar
+   - **Avaliar Colegas**: Veja lista de colegas da mesma turma/grupo/sprint
+   - **Dar Notas**: Avalie cada colega com nota de 0-3 e feedback por eixo
+   - **Ver Resultados**: Visualize avaliações recebidas e estatísticas
 
-### 🔧 Comandos por Sistema
+## 🗄️ Banco de Dados
 
-**Windows:**
-```cmd
-# CMD ou PowerShell
-streamlit run app.py
-```
+O sistema utiliza SQLite com as seguintes tabelas:
 
-**macOS/Linux:**
-```bash
-# Terminal
-streamlit run app.py
-# ou
-python -m streamlit run app.py
-```
+- **professores**: Dados dos professores orientadores
+- **alunos**: Dados dos alunos com turma, grupo e sprint atual
+- **eixos**: Eixos de avaliação com descrições e observações
+- **avaliacoes**: Avaliações com nota (0-3) e feedback por eixo
 
-### 🌐 Acesso
-- **URL:** http://localhost:8501
-- **Porta padrão:** 8501
-- **Para parar:** Ctrl+C no terminal
+## 🔐 Credenciais Padrão
 
-### 📱 Compatibilidade
-- **Navegadores:** Chrome, Firefox, Safari, Edge
-- **Dispositivos:** Desktop, tablet, mobile (responsivo)
+### Professores Orientadores:
+- **Email**: vanessa.nunes@prof.inteli.edu.br
+- **Senha**: prof123
 
-## 🔧 Troubleshooting
+- **Email**: hermano.peixoto@prof.inteli.edu.br  
+- **Senha**: prof123
 
-### Problemas Comuns
+> ⚠️ **IMPORTANTE**: Altere as senhas padrão após o primeiro login!
 
-**❌ "pip não é reconhecido" (Windows)**
-```cmd
-# Instale o Python do site oficial: https://python.org
-# Ou use:
-python -m pip install -r requirements.txt
-```
+## 🛠️ Tecnologias Utilizadas
 
-**❌ "Permission denied" (macOS/Linux)**
-```bash
-# Use sudo ou instale para usuário:
-pip install --user -r requirements.txt
-```
+- **Node.js**: Runtime JavaScript
+- **Express.js**: Framework web
+- **SQLite**: Banco de dados
+- **EJS**: Template engine
+- **bcryptjs**: Criptografia de senhas
+- **express-session**: Gerenciamento de sessões
+- **connect-flash**: Mensagens flash
+- **Bootstrap**: Framework CSS
 
-**❌ "Porta 8501 já em uso"**
-```bash
-# Use outra porta:
-streamlit run app.py --server.port 8502
-```
+## 📊 Sistema de Notas
 
-**❌ "Erro de encoding"**
-```bash
-# Defina encoding UTF-8:
-export PYTHONIOENCODING=utf-8  # Linux/macOS
-set PYTHONIOENCODING=utf-8     # Windows
-```
+- **0**: Não Atendeu
+- **1**: Atendeu Parcialmente
+- **2**: Atendeu Bem
+- **3**: Atendeu Excelentemente
 
-### 🆘 Suporte
-- **Python:** 3.8+
-- **Sistemas:** Windows 10+, macOS 10.14+, Ubuntu 18.04+
-- **Memória:** Mínimo 4GB RAM
+## 🔄 Fluxo de Avaliação
 
-3. **Tela de Login**:
-   - Selecione seu time
-   - Selecione seu nome
-   - Clique em "Entrar"
+1. **Aluno faz login** → Dashboard atualizado
+2. **Seleciona sprint** → Escolhe sprint 1-5
+3. **Vê colegas de equipe** → Mesma turma + grupo + sprint
+4. **Avalia cada colega** → Nota 0-3 + feedback por eixo
+5. **Visualiza resultados** → Estatísticas e feedback recebido
 
-4. **Tela de Avaliação**:
-   - Para cada colega, atribua notas de 0 a 3 em cada eixo
-   - Escreva um feedback textual
-   - **Importante**: A soma das notas de cada eixo deve ser igual ao número de colegas + 1
-   - Clique em "Salvar Avaliações"
+## 🛡️ Segurança
 
-## Estrutura de Dados
+- Senhas criptografadas com bcryptjs
+- Sessões seguras com express-session
+- Validações robustas no frontend e backend
+- Controle de acesso por tipo de usuário
+- Prevenção de avaliações duplicadas
 
-Os dados são salvos em dois formatos:
+## 📝 Scripts Disponíveis
 
-1. **Arquivo Individual**: `dados/avaliacoes_YYYYMMDD_HHMMSS.parquet`
-2. **Arquivo Consolidado**: `dados/avaliacoes_consolidadas.parquet`
+- `npm start`: Inicia o servidor
+- `npm run init-db`: Inicializa o banco de dados
 
-### Campos Salvos
+## 🤝 Contribuição
 
-- `timestamp`: Data e hora da avaliação
-- `aluno_avaliador`: Nome do aluno que fez a avaliação
-- `time`: Time do avaliador
-- `aluno_avaliado`: Nome do aluno avaliado
-- `eixo`: Eixo de avaliação (Entregas reais, Valor Percebido, Caixa de Ferramentas)
-- `nota`: Nota atribuída (0-3)
-- `feedback`: Comentário textual específico para cada eixo
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-## ⚙️ Personalização
+## 📄 Licença
 
-### Versão MVC
-Para personalizar a lista de alunos, edite o arquivo `src/models/usuario.py`:
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-```python
-def __init__(self):
-    self.alunos = {
-        "Time A": ["Seu Nome", "Colega 1", "Colega 2", "Colega 3"],
-        "Time B": ["Outro Nome", "Outro Colega 1", "Outro Colega 2"],
-        # Adicione mais times conforme necessário
-    }
-    
-    self.eixos = ["Colaboração", "Responsabilidade", "Comunicação"]
-    
-    self.config = Configuracao(
-        nota_minima=0,
-        nota_maxima=3,
-        diretorio_dados="dados"
-    )
-```
+## 👥 Autores
 
-### Versão Original
-Para personalizar a lista de alunos, edite o arquivo `config.py`:
-
-```python
-ALUNOS = {
-    "Time A": ["Seu Nome", "Colega 1", "Colega 2", "Colega 3"],
-    "Time B": ["Outro Nome", "Outro Colega 1", "Outro Colega 2"],
-    # Adicione mais times conforme necessário
-}
-
-# Você também pode modificar os eixos de avaliação
-EIXOS = ["Colaboração", "Responsabilidade", "Comunicação"]
-
-# E as configurações do sistema
-CONFIG = {
-    "nota_minima": 0,
-    "nota_maxima": 3,
-    "diretorio_dados": "dados"
-}
-```
-
-## Validação de Notas
-
-O sistema garante que:
-- Cada eixo tenha exatamente `(número de colegas + 1)` pontos distribuídos
-- As notas sejam de 0 a 3
-- Todas as avaliações tenham feedback textual
-
-## 📊 Visualização de Dados
-
-### Versão MVC (Recomendada)
-```bash
-streamlit run visualizador_mvc.py
-```
-
-### Versão Original
-```bash
-streamlit run visualizar_dados.py
-```
-
-Este aplicativo permite:
-- Visualizar resumos estatísticos
-- Filtrar dados por time, avaliador ou eixo
-- Ver gráficos de distribuição de notas
-- Exportar dados para CSV
-- Visualizar feedbacks textuais
-
-## 🧪 Desenvolvimento e Testes
-
-### Executar Testes
-```bash
-# Executar todos os testes
-python scripts/run_tests.py
-
-# Executar apenas testes unitários
-python -m pytest tests/ -v
-
-# Executar com cobertura
-python -m pytest tests/ --cov=src --cov-report=html
-```
-
-### Formatar Código
-```bash
-# Formatar automaticamente
-python scripts/format_code.py
-
-# Verificar formatação
-black --check src/ tests/
-```
-
-### Verificar Qualidade
-```bash
-# Verificar estilo
-flake8 src/ tests/
-
-# Verificar tipos
-mypy src/
-```
-
-## 🏗️ Tecnologias Utilizadas
-
-### Frontend
-- **Streamlit**: Interface web interativa
-
-### Backend
-- **Pandas**: Manipulação e análise de dados
-- **PyArrow**: Formato JSON para armazenamento eficiente
-- **NumPy**: Operações numéricas
-
-### Visualização
-- **Plotly**: Gráficos interativos
-
-### Desenvolvimento
-- **Pytest**: Framework de testes
-- **Black**: Formatação de código
-- **Flake8**: Verificação de estilo
-- **MyPy**: Verificação de tipos
+- **Desenvolvido para**: Inteli - Instituto de Tecnologia e Liderança
+- **Professores Orientadores**: Vanessa Nunes e Hermano Peixoto

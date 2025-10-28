@@ -1,0 +1,151 @@
+<%- include('../layouts/main', { title: title, body: `
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-key me-2"></i>
+                    Definir Senha
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Primeiro Login:</strong> Olá <strong><%= alunoNome %></strong>!<br>
+                    Este é seu primeiro acesso. Por favor, defina uma senha segura para sua conta.<br>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        <strong>Importante:</strong> Você deve digitar a senha duas vezes para confirmar que está correta.
+                    </small>
+                </div>
+                
+                <form method="POST" action="/aluno/definir-senha" id="senhaForm">
+                    <div class="mb-3">
+                        <label for="senha" class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" id="senha" name="senha" required minlength="6">
+                        <div class="form-text">A senha deve ter pelo menos 6 caracteres.</div>
+                        <div class="invalid-feedback" id="senhaError"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmarSenha" class="form-label">Confirmar Senha</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmarSenha" name="confirmarSenha" required minlength="6">
+                            <span class="input-group-text" id="senhaStatus">
+                                <i class="fas fa-times text-danger" id="senhaStatusIcon"></i>
+                            </span>
+                        </div>
+                        <div class="invalid-feedback" id="confirmarSenhaError"></div>
+                        <div class="valid-feedback" id="confirmarSenhaSuccess" style="display: none;">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Senhas coincidem!
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="fas fa-save me-2"></i>
+                            Definir Senha e Entrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center text-muted">
+                <small>
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Sua senha será criptografada e armazenada com segurança.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Validação em tempo real das senhas
+const senhaInput = document.getElementById('senha');
+const confirmarSenhaInput = document.getElementById('confirmarSenha');
+const senhaError = document.getElementById('senhaError');
+const confirmarSenhaError = document.getElementById('confirmarSenhaError');
+const submitBtn = document.getElementById('submitBtn');
+const form = document.getElementById('senhaForm');
+
+function validatePasswords() {
+    const senha = senhaInput.value;
+    const confirmarSenha = confirmarSenhaInput.value;
+    let isValid = true;
+
+    // Limpar erros anteriores
+    senhaInput.classList.remove('is-invalid');
+    confirmarSenhaInput.classList.remove('is-invalid', 'is-valid');
+    senhaError.textContent = '';
+    confirmarSenhaError.textContent = '';
+    
+    // Elementos de feedback
+    const senhaStatusIcon = document.getElementById('senhaStatusIcon');
+    const confirmarSenhaSuccess = document.getElementById('confirmarSenhaSuccess');
+    const senhaStatus = document.getElementById('senhaStatus');
+
+    // Validar senha
+    if (senha.length < 6) {
+        senhaInput.classList.add('is-invalid');
+        senhaError.textContent = 'A senha deve ter pelo menos 6 caracteres';
+        isValid = false;
+    }
+
+    // Validar confirmação de senha
+    if (confirmarSenha) {
+        if (senha !== confirmarSenha) {
+            confirmarSenhaInput.classList.add('is-invalid');
+            confirmarSenhaError.textContent = 'As senhas não coincidem';
+            senhaStatusIcon.className = 'fas fa-times text-danger';
+            senhaStatus.className = 'input-group-text bg-danger-subtle';
+            confirmarSenhaSuccess.style.display = 'none';
+            isValid = false;
+        } else if (senha.length >= 6) {
+            // Senhas coincidem e são válidas
+            confirmarSenhaInput.classList.add('is-valid');
+            senhaStatusIcon.className = 'fas fa-check text-success';
+            senhaStatus.className = 'input-group-text bg-success-subtle';
+            confirmarSenhaSuccess.style.display = 'block';
+        }
+    } else {
+        // Limpar indicadores quando campo está vazio
+        senhaStatusIcon.className = 'fas fa-times text-danger';
+        senhaStatus.className = 'input-group-text';
+        confirmarSenhaSuccess.style.display = 'none';
+    }
+
+    // Habilitar/desabilitar botão
+    const passwordsMatch = senha && confirmarSenha && senha === confirmarSenha && senha.length >= 6;
+    submitBtn.disabled = !passwordsMatch;
+
+    return isValid && passwordsMatch;
+}
+
+// Event listeners
+senhaInput.addEventListener('input', validatePasswords);
+confirmarSenhaInput.addEventListener('input', validatePasswords);
+
+// Prevenir envio se as senhas não coincidirem
+form.addEventListener('submit', function(e) {
+    if (!validatePasswords()) {
+        e.preventDefault();
+        alert('Por favor, corrija os erros antes de continuar.');
+        return false;
+    }
+    
+    // Confirmação final
+    const senha = senhaInput.value;
+    const confirmarSenha = confirmarSenhaInput.value;
+    
+    if (senha !== confirmarSenha) {
+        e.preventDefault();
+        alert('As senhas não coincidem. Por favor, verifique novamente.');
+        return false;
+    }
+});
+
+// Validação inicial
+validatePasswords();
+</script>
+` }) %>
